@@ -270,7 +270,7 @@ function main() {
 							source.x = dist_border;
 						}
 					}
-					else {	// Ngative Speeds
+					else {	// Negative Speeds
 						if (observer.x_speed > source.x_speed) {
 							observer.x = canvas.width - dist_border;
 							source.x = canvas.width - dist_border + dist_obj;
