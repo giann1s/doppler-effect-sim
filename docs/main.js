@@ -173,7 +173,7 @@ var Simulator = /** @class */ (function () {
             context.beginPath();
             context.strokeStyle = waves.color;
             context.lineWidth = 2;
-            //context.arc(wave[0], wave[1], propSpeed * (second - wave[2]) * scale, 2 * Math.PI, false);
+            //context.arc(wave[0], wave[1], propSpeed * (second - wave[2]) * scale, 0, 2 * Math.PI, false);
             context.arc(wave[0], canvas.height / 2, propSpeed * (second - wave[2]) * scale, 0, 2 * Math.PI, false);
             context.stroke();
             context.closePath();
@@ -231,16 +231,7 @@ var Simulator = /** @class */ (function () {
             this.draw_object(this.source);
         }
         else {
-            /* Reset Simulation */
-            this.sec = 0;
-            this.currentFrame = 0;
-            this.timeMeter.innerHTML = "Time elapsed (s): -";
-            this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): -";
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-            this.scale = parseInt(this.scaleInput.value);
-            // Clear Canvas
-            context.clearRect(0, 0, canvas.width, canvas.height);
+            this.reset();
             if (this.customPosCheckbox.checked) { // Set custom starting positions
                 this.observer.x = parseInt(this.observerCustomXInput.value);
                 this.observer.y = canvas.height / 2;
@@ -283,12 +274,21 @@ var Simulator = /** @class */ (function () {
                 this.observer.y = canvas.height / 2;
                 this.source.y = canvas.height / 2;
             }
-            // Waves
-            this.waves.list = [];
-            this.waves.last_emission = 0;
             this.draw_object(this.observer);
             this.draw_object(this.source);
         }
+    };
+    Simulator.prototype.reset = function () {
+        var canvas = this.canvas;
+        var context = this.context;
+        this.sec = 0;
+        this.currentFrame = 0;
+        this.timeMeter.innerHTML = "Time elapsed (s): -";
+        this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): -";
+        // Clear Canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        this.waves.list = [];
+        this.waves.last_emission = 0;
     };
     return Simulator;
 }());
