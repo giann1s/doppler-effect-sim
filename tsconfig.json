@@ -9,7 +9,7 @@
         "noUnusedLocals": true,
         "module": "commonjs",
 
-        "outDir": "./public"
+        "outDir": "./docs"
     },
 
     "include": ["src/*"]
