@@ -3,7 +3,11 @@ document.addEventListener("DOMContentLoaded", main);
 function main() {
 	let sim = new Simulator;
 
-	setInterval(() => sim.redraw(), 1000 / sim.FPS);
+	setInterval(() => {
+		sim.update_state();
+		sim.redraw();
+
+	}, 1000 / sim.FPS);
 }
 
 class Simulator {
@@ -157,11 +161,24 @@ class Simulator {
 
 		this.run = false;
 
+		this.canvas.width = this.canvas.clientWidth;
+		this.canvas.height = this.canvas.clientHeight;
+
 		this.createEvents();
-		this.redraw();
+
+		this.setObjectsInitialPositions();
 	}
 
 	private createEvents() {
+
+		window.onresize = () => {
+			let canvas = this.canvas;
+
+			canvas.width = canvas.clientWidth;
+			canvas.height = canvas.clientHeight;
+
+			this.setObjectsInitialPositions();
+		};
 
 		// Observer
 		this.observerXSpeedInput.onchange = () => {
@@ -192,7 +209,7 @@ class Simulator {
 		this.restartIfNotVisibleCheckbox.onclick = () => {
 			this.restartIfNotVisible = this.restartIfNotVisibleCheckbox.checked;
 		};
-		this.customPosCheckbox.onclick = () => {
+		this.customPosCheckbox.onclick = this.observerCustomXInput.onchange = this.sourceCustomXInput.onchange = () => {
 			if (this.customPosCheckbox.checked) {
 				if (this.sourceCustomXInput.value == "") {
 					this.sourceCustomXInput.value = "0";
@@ -206,7 +223,7 @@ class Simulator {
 				this.observerCustomXInput.disabled = true;
 			}
 
-			this.setInitialPositions();
+			this.setObjectsInitialPositions();
 		};
 
 		this.runButton.onclick = () => {
@@ -231,21 +248,60 @@ class Simulator {
 		};
 	}
 
-	private setInitialPositions() {
+	private setObjectsInitialPositions() {
+		let canvas = this.canvas;
 
+		if (this.customPosCheckbox.checked) {	// Set custom positions
+			this.observer.initial_x = parseInt(this.observerCustomXInput.value);
 
+			this.source.initial_x = parseInt(this.sourceCustomXInput.value);
+		}
+		else {	// Automatically set positions
 
+			if (this.observer.x_speed * this.source.x_speed > 0) {	// Same direction
+				if (this.observer.x_speed > 0) {	// Positive Speeds
+					if (this.observer.x_speed > this.source.x_speed) {
+						this.observer.initial_x = this.dist_border;
+						this.source.initial_x = this.dist_border + this.dist_obj;
+					}
+					else {
+						this.observer.initial_x = this.dist_border + this.dist_obj;
+						this.source.initial_x = this.dist_border;
+					}
+				}
+				else {	// Negative Speeds
+					if (this.observer.x_speed > this.source.x_speed) {
+						this.observer.initial_x = canvas.width - this.dist_border;
+						this.source.initial_x = canvas.width - this.dist_border + this.dist_obj;
+					}
+					else {
+						this.observer.initial_x = canvas.width - this.dist_border + this.dist_obj;
+						this.source.initial_x = canvas.width - this.dist_border;
+					}
+				}
+			}
+			else {	// Opposite Direction
+				if (this.observer.x_speed > this.source.x_speed) {
+					this.observer.initial_x = this.dist_border;
+					this.source.initial_x = canvas.width - this.dist_border;
+				}
+				else {
+					this.observer.initial_x = canvas.width - this.dist_border;
+					this.source.initial_x = this.dist_border;
+				}
+			}
+		}
 	}
 
 	private calc_observed_freq(observer, source, propSpeed) {
 
-		let observed_freq = 0;
+		let observed_freq;
 
 		if (observer.x > source.x) {
-			observed_freq = source.freq * (parseFloat(propSpeed) - parseFloat(observer.x_speed)) / (parseFloat(propSpeed) - parseFloat(source.x_speed));
+			observed_freq = source.freq * (propSpeed - observer.x_speed) / (propSpeed - source.x_speed);
 		}
 		else if (observer.x < source.x) {
-			observed_freq = source.freq * (parseFloat(propSpeed) + parseFloat(observer.x_speed)) / (parseFloat(propSpeed) + parseFloat(source.x_speed));
+			observed_freq = source.freq * (propSpeed + observer.x_speed) / (propSpeed + source.x_speed);
 		}
 		else {
 			observed_freq = source.freq
@@ -294,30 +350,28 @@ class Simulator {
 		}
 	}
 
-	redraw() {
+	update_state() {
 		let canvas = this.canvas;
-		let context = this.context;
 
-		if (this.run && ! (this.restartIfNotVisible &&
+		if (this.restartIfNotVisible &&
 			!(
 				this.visible(this.source, canvas.width, canvas.height) &&
 				this.visible(this.observer, canvas.width, canvas.height)
-			))) {
+			)) {
+
+			this.reset();
+		}
+
+		if (this.run) {
 
 			this.currentFrame++;
 			this.sec = this.currentFrame / this.FPS;
-			this.timeMeter.innerHTML = "Time elapsed (s): " + Math.floor(this.sec).toString();
-
-			canvas.width = canvas.clientWidth;
-			canvas.height = canvas.clientHeight;
 
 			this.observer.x += this.observer.x_speed * this.FRAMETIME * this.scale;
 			this.observer.y = canvas.height / 2;
 
 			this.source.x += this.source.x_speed * this.FRAMETIME * this.scale;
 			this.source.y = canvas.height / 2;
-
-			this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): " + this.calc_observed_freq(this.observer, this.source, this.propSpeed);
 
 			// Waves
 			let maxVisibleSpaceRad = Math.sqrt(canvas.width ** 2 + canvas.height ** 2)
@@ -348,81 +402,45 @@ class Simulator {
 				}
 			}
 			this.source.prevFreq = this.source.freq
-
-			// Clear Canvas
-			context.clearRect(0, 0, canvas.width, canvas.height);
-
-			// Draw Frame
-			this.draw_waves(this.waves, this.sec, this.scale);
-			this.draw_object(this.observer);
-			this.draw_object(this.source);
 		}
 		else {
 			this.reset();
-
-			if (this.customPosCheckbox.checked) {	// Set custom starting positions
-				this.observer.x = parseInt(this.observerCustomXInput.value);
-				this.observer.y = canvas.height / 2;
-
-				this.source.x = parseInt(this.sourceCustomXInput.value);
-				this.source.y = canvas.height / 2;
-			}
-			else {	// Automatically set positions
-
-				if (this.observer.x_speed * this.source.x_speed > 0) {	// Same direction
-					if (this.observer.x_speed > 0) {	// Positive Speeds
-						if (this.observer.x_speed > this.source.x_speed) {
-							this.observer.x = this.dist_border;
-							this.source.x = this.dist_border + this.dist_obj;
-						}
-						else {
-							this.observer.x = this.dist_border + this.dist_obj;
-							this.source.x = this.dist_border;
-						}
-					}
-					else {	// Negative Speeds
-						if (this.observer.x_speed > this.source.x_speed) {
-							this.observer.x = canvas.width - this.dist_border;
-							this.source.x = canvas.width - this.dist_border + this.dist_obj;
-						}
-						else {
-							this.observer.x = canvas.width - this.dist_border + this.dist_obj;
-							this.source.x = canvas.width - this.dist_border;
-						}
-					}
-				}
-				else {	// Opposite Direction
-					if (this.observer.x_speed > this.source.x_speed) {
-						this.observer.x = this.dist_border;
-						this.source.x = canvas.width - this.dist_border;
-					}
-					else {
-						this.observer.x = canvas.width - this.dist_border;
-						this.source.x = this.dist_border;
-					}
-				}
-
-				this.observer.y = canvas.height / 2;
-				this.source.y = canvas.height / 2;
-			}
-
-			this.draw_object(this.observer);
-			this.draw_object(this.source);
 		}
+	}
+
+	redraw() {
+		let canvas = this.canvas;
+		let context = this.context;
+
+		if (this.run) {
+			this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): " + this.calc_observed_freq(this.observer, this.source, this.propSpeed);
+			this.timeMeter.innerHTML = "Time elapsed (s): " + Math.floor(this.sec).toString();
+		}
+		else {
+			this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): -";
+			this.timeMeter.innerHTML = "Time elapsed (s): -";
+		}
+
+		// Clear Canvas
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Draw Frame
+		this.draw_waves(this.waves, this.sec, this.scale);
+		this.draw_object(this.observer);
+		this.draw_object(this.source);
 	}
 
 	private reset() {
 		let canvas = this.canvas;
-		let context = this.context;
 
 		this.sec = 0;
 		this.currentFrame = 0;
 
-		this.timeMeter.innerHTML = "Time elapsed (s): -";
-		this.observedFreqIndicator.innerHTML = "Observed Frequency (Hz): -";
+		this.observer.x = this.observer.initial_x;
+		this.observer.y = canvas.height / 2;
 
-		// Clear Canvas
-		context.clearRect(0, 0, canvas.width, canvas.height);
+		this.source.x = this.source.initial_x;
+		this.source.y = canvas.height / 2;
 
 		this.waves.list = [];
 	    this.waves.last_emission = 0;
