@@ -1,104 +1,6 @@
+document.addEventListener("DOMContentLoaded", main);
+
 function main() {
-
-	function calc_observed_freq(observer, source, prop_speed) {
-		
-		observed_freq = 0;
-
-		if (observer.x > source.x) {
-			observed_freq = source.freq * (parseFloat(prop_speed) - parseFloat(observer.x_speed)) / (parseFloat(prop_speed) - parseFloat(source.x_speed));
-		}
-		else if (observer.x < source.x) {
-			observed_freq = source.freq * (parseFloat(prop_speed) + parseFloat(observer.x_speed)) / (parseFloat(prop_speed) + parseFloat(source.x_speed));
-		}
-		else {
-			observed_freq = source.freq
-		}
-		
-		if (observed_freq < 0) {
-			observed_freq = 0;
-		}
-
-		return Math.round(observed_freq)
-	}
-
-	function run_stop() {
-		if (document.getElementById("run-button").textContent == "Run") {
-			document.getElementById("run-button").textContent = "Stop";
-
-			// Prevent propagation speed and scale from changing while the simulation is running
-			document.getElementById("prop-speed").disabled = true;
-			document.getElementById("scale").disabled = true;
-
-			run = true;
-		}
-		else {
-			document.getElementById("run-button").textContent = "Run";
-
-			// Allow user to change propagation speed and scale
-			document.getElementById("prop-speed").disabled = false;
-			document.getElementById("scale").disabled = false;
-
-			run = false;
-		}
-	}
-
-	function visible(object, max_x, max_y) {
-		if (object.x - object.rad <= max_x && object.x + object.rad >= 0 && object.y - object.rad <= max_y && object.y + object.rad >= 0) {
-			return true
-		}
-		else {
-			return false
-		}
-	}
-
-	function reset_sim(are_visible) {
-		if (document.getElementById("restart-if-not-vis").checked) {
-			if (are_visible) {
-				return false
-			}
-			else {
-				return true
-			}
-		}
-		else {
-			return false;
-		}
-	}
-
-	function draw_object(object) {
-		ctx.beginPath();
-		ctx.fillStyle = object.color;
-		ctx.arc(object.x, object.y, object.rad, 2 * Math.PI, false)
-		ctx.fill();
-		ctx.closePath();
-	}
-
-	function draw_waves(waves, second, scale) {
-		for (let wave of waves.list) {
-			ctx.beginPath();
-			ctx.strokeStyle = waves.color;
-			ctx.lineWidth = 2;
-			//ctx.arc(wave[0], wave[1], prop_speed * (second - wave[2]) * scale, 2 * Math.PI, false);
-			ctx.arc(wave[0], canvas.height / 2, prop_speed * (second - wave[2]) * scale, 2 * Math.PI, false);
-			ctx.stroke();
-			ctx.closePath();
-		}
-	}
-
-	function custom_positions() {
-		if (document.getElementById("custom-positions").checked) {
-			if (document.getElementById("source-custom-x").value == "") {
-				document.getElementById("source-custom-x").value = 0;
-				document.getElementById("observer-custom-x").value = 0;
-			}
-			document.getElementById("source-custom-x").disabled = false;
-			document.getElementById("observer-custom-x").disabled = false;
-		}
-		else {
-			document.getElementById("source-custom-x").disabled = true;
-			document.getElementById("observer-custom-x").disabled = true;
-		}
-	}
 
 	const FPS = 60;
 	const FRAMETIME = 1 / FPS;
@@ -107,12 +9,12 @@ function main() {
 	const dist_border = 140;
 	const dist_obj = 50;
 
-	var run = false
+	let run = false;
 
-	var sec = 0;
-	var current_frame = 0;
+	let sec = 0;
+	let current_frame = 0;
 
-	var observer = {
+	let observer = {
 		x: 0,
 		x_speed: 0,
 		y: 0,
@@ -121,7 +23,7 @@ function main() {
 		rad: 25,
 	};
 
-	var source = {
+	let source = {
 		x: 0,
 		x_speed: 0,
 		y: 0,
@@ -131,14 +33,16 @@ function main() {
 		rad: 10,
 	};
 
-	var waves = {
+	let waves = {
 		list: [], // Stores arrays that contain the x and y position of the object and the time (in sec) when the emission occured
 		color: "#FF4444",
 		last_emission: 0,
 	};
 
 	// Add event listeners
-	document.getElementById("run-button").addEventListener("click", run_stop);
+	document.getElementById("run-button").addEventListener("click", function(event) {
+		run = run_stop();
+	});
 	document.getElementById("custom-positions").addEventListener("click", custom_positions)
 
 	// Set color indicator colors
@@ -162,9 +66,13 @@ function main() {
 	source.x_speed = document.getElementById("source-x-speed").value = -30;
 	source.freq = document.getElementById("source-frequency").value = 6;
 
-	function render_new_frame() {
+	setInterval(function() {
 
-		if (run == true && !reset_sim((visible(source, canvas.width, canvas.height) && visible(observer, canvas.width, canvas.height)))) {
+		if (run && ! (document.getElementById("restart-if-not-vis").checked &&
+			!(
+				visible(source, canvas.width, canvas.height) &&
+				visible(observer, canvas.width, canvas.height)
+			))) {
 
 			current_frame++;
 			sec = current_frame / FPS;
@@ -173,7 +81,7 @@ function main() {
 			canvas.width = canvas.clientWidth;
 			canvas.height = canvas.clientHeight;
 			prop_speed = document.getElementById("prop-speed").value;
-			scale = document.getElementById("scale").value;			
+			scale = document.getElementById("scale").value;
 
 			// Observer
 			observer.x_speed = document.getElementById("observer-x-speed").value;
@@ -185,7 +93,7 @@ function main() {
 			source.x += source.x_speed * FRAMETIME * scale;
 			source.y = canvas.height / 2;
 			source.freq = document.getElementById("source-frequency").value;
-			
+
 			document.getElementById("observed-freq").innerHTML = "Observed Frequency (Hz): " + calc_observed_freq(observer, source, prop_speed);
 
 			// Waves
@@ -201,7 +109,7 @@ function main() {
 			if (source.freq != 0) {	// Add new waves
 				new_waves = parseInt(source.freq * (sec - waves.last_emission));
 				wave_period = 1 / source.freq;
-				
+
 				for (let i = 1; i <= new_waves; i++) {
 					if (waves.list.length != 0 && prev_freq == source.freq) {
 						waves.list.push([source.x, source.y, waves.last_emission + wave_period * i]);
@@ -252,7 +160,7 @@ function main() {
 
 				// Source
 				source.x = document.getElementById("source-custom-x").value;
-				source.y = canvas.height / 2;				
+				source.y = canvas.height / 2;
 			}
 			else {	// Automatically set positions
 
@@ -289,7 +197,6 @@ function main() {
 					else {
 						observer.x = canvas.width - dist_border;
 						source.x = dist_border;
-						
 					}
 				}
 
@@ -304,8 +211,93 @@ function main() {
 			draw_object(observer);
 			draw_object(source);
 		}
-	}
-	setInterval(render_new_frame, 1000 / FPS)
+	}, 1000 / FPS)
 }
 
-document.addEventListener("DOMContentLoaded", main);
+function calc_observed_freq(observer, source, prop_speed) {
+
+	observed_freq = 0;
+
+	if (observer.x > source.x) {
+		observed_freq = source.freq * (parseFloat(prop_speed) - parseFloat(observer.x_speed)) / (parseFloat(prop_speed) - parseFloat(source.x_speed));
+	}
+	else if (observer.x < source.x) {
+		observed_freq = source.freq * (parseFloat(prop_speed) + parseFloat(observer.x_speed)) / (parseFloat(prop_speed) + parseFloat(source.x_speed));
+	}
+	else {
+		observed_freq = source.freq
+	}
+
+	if (observed_freq < 0) {
+		observed_freq = 0;
+	}
+
+	return Math.round(observed_freq)
+}
+
+function run_stop() {
+	let run = false;
+
+	if (document.getElementById("run-button").textContent == "Run") {
+		document.getElementById("run-button").textContent = "Stop";
+
+		// Prevent propagation speed and scale from changing while the simulation is running
+		document.getElementById("prop-speed").disabled = true;
+		document.getElementById("scale").disabled = true;
+
+		run = true;
+	}
+	else {
+		document.getElementById("run-button").textContent = "Run";
+
+		// Allow user to change propagation speed and scale
+		document.getElementById("prop-speed").disabled = false;
+		document.getElementById("scale").disabled = false;
+	}
+
+	return run;
+}
+
+function visible(object, max_x, max_y) {
+	if (object.x - object.rad <= max_x && object.x + object.rad >= 0 && object.y - object.rad <= max_y && object.y + object.rad >= 0) {
+		return true
+	}
+	else {
+		return false
+	}
+}
+
+function draw_object(object) {
+	ctx.beginPath();
+	ctx.fillStyle = object.color;
+	ctx.arc(object.x, object.y, object.rad, 2 * Math.PI, false)
+	ctx.fill();
+	ctx.closePath();
+}
+
+function draw_waves(waves, second, scale) {
+	for (let wave of waves.list) {
+		ctx.beginPath();
+		ctx.strokeStyle = waves.color;
+		ctx.lineWidth = 2;
+		//ctx.arc(wave[0], wave[1], prop_speed * (second - wave[2]) * scale, 2 * Math.PI, false);
+		ctx.arc(wave[0], canvas.height / 2, prop_speed * (second - wave[2]) * scale, 2 * Math.PI, false);
+		ctx.stroke();
+		ctx.closePath();
+	}
+}
+
+function custom_positions() {
+	if (document.getElementById("custom-positions").checked) {
+		if (document.getElementById("source-custom-x").value == "") {
+			document.getElementById("source-custom-x").value = 0;
+			document.getElementById("observer-custom-x").value = 0;
+		}
+		document.getElementById("source-custom-x").disabled = false;
+		document.getElementById("observer-custom-x").disabled = false;
+	}
+	else {
+		document.getElementById("source-custom-x").disabled = true;
+		document.getElementById("observer-custom-x").disabled = true;
+	}
+}
