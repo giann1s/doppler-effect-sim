@@ -1,0 +1,118 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+
+:root {
+    --opt_bar_width: 240px;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #cccccc;
+    font-family: Cambria;
+    display: inline-block;
+    user-select: none;
+}
+
+.options-label {
+    padding-top: 25px;
+    padding-bottom: 13px;
+    padding-left: 13px;
+    text-align: left;
+}
+
+hr {
+    width: 90%;
+    color: #cccccc;
+    margin: auto;
+}
+
+.options-wrapper{
+    float: left;
+    width: var(--opt_bar_width);
+    height: 100vh;
+    background-color: #252526;
+    overflow-y : scroll;
+}
+
+.options-section {
+    align-self: center;
+    padding-left: 22px;
+    padding-right: 29px;
+}
+
+.section-title {
+    margin-top: 26px;
+    text-align: center;
+    font-size: large;
+}
+
+.option {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: medium;
+}
+
+.canvas-wrapper{
+    float: right;
+    width: calc(100% - var(--opt_bar_width));
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    background-color: #333333;
+    width: 100%;
+    height: 100%;
+}
+
+.time {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: fit-content;
+    height: fit-content;
+    margin-top: 20px;
+    margin-right: 50px;
+}
+
+.observed-freq {
+    position: absolute;
+    top: 0;
+    left: var(--opt_bar_width);
+    width: fit-content;
+    height: fit-content;
+    margin: 20px;
+}
+
+.run-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin-right: 120px;
+    margin-bottom: 60px;
+    padding: 15px 32px;
+    font-family: Cambria;
+    font-weight: bold;
+    font-size: large;
+    background: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 16px 0 rgba(0,0,0,0.19);
+
+    color: #b4b4b4;
+    border: 3px solid #b4b4b4;
+
+}
+
+.run-button:hover {
+    color: white;
+    border-color: white;
+}
+
+.message {
+    position: absolute;
+    bottom: 0;
+    left: var(--opt_bar_width);;
+    margin: 10px;
+}

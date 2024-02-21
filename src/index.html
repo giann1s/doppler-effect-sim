@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Doppler Effect Simulation</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="main.js"></script>
+    </head>
+    <body class="body">
+
+        <!-- Options -->
+        <div id="options-wrapper" class="options-wrapper">
+
+            <h1 class="options-label">Options</h1>
+
+            <hr>
+
+            <!-- Observer Object -->
+            <div class="options-section">
+                <div class="section-title">
+                    <h3 id="observer-color-indicator">&#11044;</h3> <h3>Observer</h3>
+                </div>                
+                <div class="option">
+                    <h4>Speed (m/s)</h4> <input type="number" id="observer-x-speed" value="0">
+                </div>
+                <div class="option">
+                    <h4>Initial x position (m)</h4> <input type="number" id="observer-custom-x" disabled>
+                </div>
+            </div>
+
+            <!-- Source Object -->
+            <div class="options-section">
+                <div class="section-title">
+                    <h3 id="source-color-indicator">&#11044;</h3> <h3 style="display:inline-block;">Source</h3>
+                </div>
+                <div class="option">
+                    <h4>Speed (m/s)</h4> <input type="number" value="0" id="source-x-speed">
+                </div>
+                <div class="option">
+                    <h4>Frequency (Hz)</h4> <input type="number" value="4" id="source-frequency" min="0">
+                </div>
+                <div class="option">
+                    <h4>Initial x position (m)</h4><input type="number" id="source-custom-x" disabled>
+                </div>
+            </div>
+
+            <!-- Other -->
+            <div class="options-section">
+                <div class="section-title">
+                    <h3>Other</h3>
+                </div>
+                <div class="option">
+                    <h4>Propagation Speed (m/s)</h4> <input type="number" id="prop-speed" min="1">
+                </div>
+                <div class="option">
+                    <h4>Scale (px/m)</h4> <input type="number" id="scale" min="1">
+                </div>
+                <div class="option">
+                    <h4>Restart simulation<br>if objects<br>are not visible</h4> <input type="checkbox" id="restart-if-not-vis" checked>
+                </div>
+                <div class="option">
+                    <h4>Set custom<br>initial positions</h4> <input type="checkbox" id="custom-positions">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas" class="canvas"></canvas>     
+        </div>
+
+        <!-- Time Indicator -->
+        <div class="time">
+            <h3 id="time-meter">Time elapsed (s): -</h3>
+        </div>
+
+        <!-- Observed Frequency -->
+        <div class="observed-freq">
+            <h3 id="observed-freq">Observed Frequency (Hz): -</h3>
+        </div>
+
+        <!-- Run/Stop button -->
+        <div>
+            <button id="run-button" class="run-button">Run</button>
+        </div>
+        
+        <!-- Message -->
+        <div class="message"><h4><i>* The simulation is NOT running in real time.</i></h4></div>
+
+    </body>
+</html>
