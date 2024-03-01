@@ -4,4 +4,4 @@
 
 
 *Screenshot*
-![alt Doppler Effect Simulator Screenshot](https://raw.githubusercontent.com/Giann1s/doppler-effect-sim/main/screenshots/image.png)
+![alt Doppler Effect Simulator Screenshot](https://raw.githubusercontent.com/giann1s/doppler-effect-sim/master/screenshots/image.png)
