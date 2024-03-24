@@ -1,6 +1,6 @@
 ## Doppler Effect Simulator
 \
-[View Deployment on Github Pages](https://giann1s.github.io/doppler-effect-sim/)
+[View Deployment on Github Pages](https://lagodimos.github.io/doppler-effect-sim/)
 
 
 *Screenshot*
